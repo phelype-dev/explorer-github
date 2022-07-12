@@ -1,6 +1,7 @@
 const path = require("path");
 const htmlWp = require("html-webpack-plugin");
 const isDevelopment = process.env.NODE_ENV !== "production";
+const reactRefresh = require("@pmmmwh/react-refresh-webpack-plugin");
 module.exports = {
   mode: isDevelopment ? "development" : "production",
   devtool: isDevelopment ? "eval-source-map" : "source-map",
@@ -18,18 +19,27 @@ module.exports = {
     },
     compress: true,
     port: 9000,
+    hot: true,
   },
   plugins: [
+    isDevelopment && new reactRefresh(),
     new htmlWp({
       template: path.resolve(__dirname, "public", "index.html"),
     }),
-  ],
+  ].filter(Boolean),
   module: {
     rules: [
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        use: "babel-loader",
+        use: {
+          loader: "babel-loader",
+          options: {
+            plugins: [
+              isDevelopment && require.resolve("react-refresh/babel"),
+            ].filter(Boolean),
+          },
+        },
       },
       {
         test: /\.scss?$/,
